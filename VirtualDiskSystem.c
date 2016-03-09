@@ -10,39 +10,6 @@
 #include <inttypes.h>
 #include <string.h>
 
-#pragma pack(1)
-typedef struct {
-    char version;      /*文件版本标志，此为版本"1"*/
-    char flag[3];      /*文件标志位，此版本为第一版，填充为"vd",意为Virtual Disk*/
-    uint64_t fsize;    /*文件长度*/
-    uint8_t bsizeflag; /*block size flag*/
-    uint64_t bcount;   /*block 数量*/
-    uint64_t tstart;   /*block分配表起始位置*/
-    uint64_t tend;     /*block分配表结束位置*/
-    uint64_t bstart;   /*block起始位置*/
-    uint64_t bend;     /*block结束位置*/
-} VDF_HEADER;
-
-typedef struct vdf_descriptor {
-    VDF_HEADER header;
-    int blocksize;
-    FILE *vdfp;
-} VDFPTR;
-
-typedef struct bat_node_descriptor{
-    int id;
-    int offset;
-    uint8_t umask;
-    uint8_t value;
-} BATNODEPTR;
-
-typedef struct block_descriptor {
-    VDFPTR vdfpoint;
-    BATNODEPTR batnodepoint;
-    int offset;
-    char *data;
-} BLOCKPTR;
-
 typedef struct {
     size_t length;
     char path[1000];
@@ -50,7 +17,6 @@ typedef struct {
 
 #define MAX_OPEN_FILE 65535
 #define GET_ARRAY_LEN(array,len) {len = (sizeof(array) / sizeof(array[0]));}
-
 
 FILENAME getInitVirtualDiskFile(){
     FILENAME fn;
@@ -69,10 +35,41 @@ int main(int argc, char** argv) {
     
     fn=getInitVirtualDiskFile();
     printf("%s,%d\n",fn.path,fn.length);
-    
-        
-        
     return (EXIT_SUCCESS);
+}
+
+/*@Unperfect*/
+/*向系统配置文件vdf.conf中添加文件*/
+int vdf_addvdf(const char *filepath){
+    FILE *configfp=fopen("vdf.conf","ab");/*以添加方式打开*/
+    if(configfp==NULL)return E_FBADIO;
+    if(access(filepath,F_OK))return E_FBADIO; /*文件不存在*/
+    fwrite(filepath,strlen(filepath),1,configfp);
+    fputc(0xAA,configfp);
+    fclose(configfp);
+    return E_SUCCESS;
+}
+
+/*@Unperfect*/
+/*从系统配置文件vdf.conf中删除文件*/
+int vdf_rmvdf(const char *filepath){
+    
+}
+
+/*@Unperfect*/
+/*从系统配置文件中读取一个vdf文件,并返回一个可读写的文件描述符*/
+FILE * vdf_getvdf(FILE *conf){
+    char f[1000];
+    int i;
+    if(feof(conf))return NULL;
+    for(i=0;i<1000;i++){
+        f[i]=fgetc(conf);
+        if(f[i]==0xAA){
+            f[i]='\0';
+            break;
+        }
+    }
+    return fopen(f,"r+b");
 }
 
 

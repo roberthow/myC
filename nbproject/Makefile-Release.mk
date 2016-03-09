@@ -64,8 +64,8 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/myc.exe: ${OBJECTFILES}
 
 ${OBJECTDIR}/VirtualDiskSystem.o: VirtualDiskSystem.c 
 	${MKDIR} -p ${OBJECTDIR}
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/VirtualDiskSystem.o VirtualDiskSystem.c
+	${RM} $@.d
+	$(COMPILE.c) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/VirtualDiskSystem.o VirtualDiskSystem.c
 
 # Subprojects
 .build-subprojects:
